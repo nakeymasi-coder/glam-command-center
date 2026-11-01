@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Glam Command Center — Glam Hustle Hub</title>
+<meta name="description" content="Glam's master front door — every farm, store, community, and tool in one place.">
+<meta name="theme-color" content="#2f6fc2">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Command Center">
+<style>
+  :root{
+    --sapphire:#2f6fc2;
+    --sapphire-deep:#174a86;
+    --sapphire-dark:#0f3563;
+    --sapphire-light:#7eb2f0;
+    --sky:#eef4ff;
+    --pearl:#ffffff;
+    --chrome:#c9d6e8;
+    --ink:#16324f;
+    --ink-soft:#47617e;
+    --card-border:#d7e4f5;
+    --shadow:0 10px 28px rgba(23,74,134,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,#e8f1ff 0%,#f6faff 45%,#eef4ff 100%);
+    min-height:100vh;
+  }
+
+  /* ============ PORTAL GATE ============ */
+  #gate{
+    position:fixed;inset:0;z-index:60;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(ellipse 90% 55% at 50% -5%,rgba(126,178,240,.55),transparent 60%),
+      radial-gradient(ellipse 70% 45% at 50% 110%,rgba(47,111,194,.35),transparent 60%),
+      linear-gradient(180deg,#0d2c55 0%,#174a86 55%,#2f6fc2 100%);
+    color:#fff;text-align:center;overflow-y:auto;
+    transition:opacity .55s ease,visibility .55s;
+  }
+  #gate.gone{opacity:0;visibility:hidden;pointer-events:none}
+  .portal{position:relative;width:212px;height:212px;margin:6px auto 4px;flex:none}
+  .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(190,220,255,.75);
+    animation:expand 3.2s ease-out infinite}
+  .ring.r2{animation-delay:1.05s}
+  .ring.r3{animation-delay:2.1s}
+  @keyframes expand{
+    0%{transform:scale(.34);opacity:0}
+    18%{opacity:.95}
+    100%{transform:scale(1.06);opacity:0}
+  }
+  .core{
+    position:absolute;inset:0;margin:auto;width:118px;height:118px;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#ffffff 0%,#cfe4ff 38%,#7eb2f0 72%,#2f6fc2 100%);
+    box-shadow:0 0 44px 10px rgba(158,203,255,.75),inset 0 0 22px rgba(255,255,255,.85);
+    display:flex;align-items:center;justify-content:center;font-size:50px;
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  .gate-kicker{letter-spacing:.32em;font-size:11px;font-weight:700;color:#bcd7ff;text-transform:uppercase;margin-top:10px}
+  .gate-title{
+    margin:8px 0 4px;font-size:clamp(30px,8.4vw,44px);line-height:1.06;font-weight:900;letter-spacing:.01em;
+    background:linear-gradient(92deg,#ffffff 10%,#cfe4ff 45%,#ffffff 70%,#9cc4f5 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .gate-sub{margin:4px auto 0;max-width:340px;font-size:15px;line-height:1.45;color:#dceaff}
+  #enterBtn{
+    margin-top:24px;min-height:56px;padding:14px 46px;border:none;border-radius:999px;cursor:pointer;
+    font-size:18px;font-weight:800;letter-spacing:.02em;color:var(--sapphire-dark);
+    background:linear-gradient(180deg,#ffffff,#dceaff);
+    box-shadow:0 12px 30px rgba(6,30,66,.45),inset 0 1px 0 #fff;
+  }
+  #enterBtn:active{transform:scale(.97)}
+  .gate-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:22px;max-width:400px}
+  .gate-chips button{
+    min-height:48px;padding:10px 18px;border-radius:999px;cursor:pointer;font-size:14.5px;font-weight:700;color:#eaf3ff;
+    background:rgba(255,255,255,.13);border:1px solid rgba(190,220,255,.55);backdrop-filter:blur(4px);
+  }
+  .gate-chips button:active{transform:scale(.96);background:rgba(255,255,255,.25)}
+  .gate-foot{margin-top:22px;font-size:12.5px;color:#a9c8f2}
+
+  /* ============ APP SHELL ============ */
+  #app{display:none}
+  #app.on{display:block}
+  header.hero{
+    padding:calc(22px + env(safe-area-inset-top)) 20px 18px;text-align:center;color:#fff;
+    background:
+      radial-gradient(ellipse 95% 70% at 50% -20%,rgba(126,178,240,.6),transparent 60%),
+      linear-gradient(160deg,var(--sapphire-dark),var(--sapphire-deep) 55%,var(--sapphire));
+    border-bottom-left-radius:26px;border-bottom-right-radius:26px;
+    box-shadow:0 12px 30px rgba(15,53,99,.28);
+  }
+  .hero .fly{font-size:27px}
+  .hero h1{margin:4px 0 2px;font-size:27px;font-weight:900;letter-spacing:.01em}
+  .hero p{margin:0;font-size:14px;color:#cfe4ff}
+  .search-wrap{max-width:640px;margin:16px auto 0}
+  #search{
+    width:100%;min-height:52px;border-radius:999px;border:2px solid rgba(255,255,255,.65);
+    padding:12px 20px;font-size:16.5px;color:var(--ink);background:#fff;outline:none;
+    box-shadow:0 8px 20px rgba(6,30,66,.25);
+  }
+  #search:focus{border-color:var(--sapphire-light)}
+  nav.pills{
+    position:sticky;top:0;z-index:40;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+    padding:12px 14px;background:rgba(238,244,255,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--card-border);
+  }
+  nav.pills::-webkit-scrollbar{display:none}
+  nav.pills button{
+    flex:none;min-height:48px;padding:10px 19px;border-radius:999px;cursor:pointer;
+    font-size:15px;font-weight:700;color:var(--sapphire-deep);
+    background:#fff;border:1.5px solid var(--chrome);
+  }
+  nav.pills button.active{
+    color:#fff;border-color:var(--sapphire);
+    background:linear-gradient(135deg,var(--sapphire),var(--sapphire-deep));
+    box-shadow:0 6px 16px rgba(47,111,194,.35);
+  }
+  main{max-width:680px;margin:0 auto;padding:6px 16px 30px}
+  section{display:none;padding-top:20px}
+  section.show{display:block}
+  .sec-head{display:flex;align-items:baseline;gap:9px;margin:2px 2px 6px}
+  .sec-head h2{margin:0;font-size:21px;font-weight:900;color:var(--sapphire-dark)}
+  .sec-head span{font-size:13px;color:var(--ink-soft)}
+  .sec-note{margin:0 2px 14px;font-size:14px;color:var(--ink-soft);line-height:1.45}
+  .card{
+    display:flex;align-items:center;gap:13px;background:var(--pearl);
+    border:1px solid var(--card-border);border-radius:18px;padding:15px 15px;margin-bottom:11px;
+    box-shadow:0 4px 14px rgba(23,74,134,.07);
+  }
+  .card .ic{
+    flex:none;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:23px;background:linear-gradient(145deg,#e3efff,#c9defc);border:1px solid #b9d2f5;
+  }
+  .card .txt{flex:1;min-width:0}
+  .card .nm{font-size:16.5px;font-weight:800;line-height:1.25}
+  .card .ds{font-size:13.5px;color:var(--ink-soft);line-height:1.4;margin-top:2px}
+  .card a.open{
+    flex:none;display:flex;align-items:center;min-height:48px;padding:10px 19px;border-radius:999px;
+    font-size:15px;font-weight:800;color:#fff;text-decoration:none;
+    background:linear-gradient(135deg,var(--sapphire),var(--sapphire-deep));
+    box-shadow:0 6px 14px rgba(47,111,194,.3);
+  }
+  .card a.open:active{transform:scale(.95)}
+  .card.hide{display:none}
+  #noResults{display:none;text-align:center;color:var(--ink-soft);font-size:15px;padding:26px 10px;line-height:1.5}
+  footer.site{max-width:680px;margin:6px auto 0;padding:6px 16px calc(30px + env(safe-area-inset-bottom));text-align:center}
+  .foot-btns{display:flex;flex-direction:column;gap:10px}
+  .foot-btns a{
+    display:flex;align-items:center;justify-content:center;min-height:54px;padding:13px 18px;border-radius:16px;
+    font-size:16.5px;font-weight:800;text-decoration:none;
+  }
+  .foot-btns a.vault{color:#fff;background:linear-gradient(135deg,var(--sapphire),var(--sapphire-deep));box-shadow:0 8px 20px rgba(47,111,194,.32)}
+  .foot-btns a.shop{color:var(--sapphire-dark);background:linear-gradient(180deg,#ffffff,#e3efff);border:1.5px solid var(--chrome)}
+  .made{margin-top:16px;font-size:12.5px;color:var(--ink-soft)}
+  @media (prefers-reduced-motion:reduce){
+    .ring,.core{animation:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= PORTAL GATE ================= -->
+<div id="gate" role="dialog" aria-label="Welcome to the Glam Command Center">
+  <div class="portal" aria-hidden="true">
+    <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+    <div class="core">🦋</div>
+  </div>
+  <div class="gate-kicker">Glam Hustle Hub</div>
+  <h1 class="gate-title">GLAM COMMAND<br>CENTER</h1>
+  <p class="gate-sub">Every farm, store, community &amp; tool you run — one front door.</p>
+  <button id="enterBtn" type="button">Enter ✨</button>
+  <div class="gate-chips" aria-label="Jump straight to a section">
+    <button type="button" data-jump="farms">🌾 Farms</button>
+    <button type="button" data-jump="business">💼 Business</button>
+    <button type="button" data-jump="communities">👑 Communities</button>
+    <button type="button" data-jump="socials">📱 Socials</button>
+    <button type="button" data-jump="tools">🛠️ Tools</button>
+  </div>
+  <div class="gate-foot">Made for Glam, by Indigo 🦋</div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header class="hero">
+    <div class="fly">🦋</div>
+    <h1>Glam Command Center</h1>
+    <p>Everything you run, one tap away.</p>
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="🔎 Search farms, stores, tools…" aria-label="Search the directory" autocomplete="off">
+    </div>
+  </header>
+
+  <nav class="pills" id="pillNav" aria-label="Sections">
+    <button type="button" data-sec="home" class="active">🏠 Home</button>
+    <button type="button" data-sec="farms">🌾 Farms</button>
+    <button type="button" data-sec="business">💼 Business</button>
+    <button type="button" data-sec="communities">👑 Communities</button>
+    <button type="button" data-sec="socials">📱 Socials</button>
+    <button type="button" data-sec="tools">🛠️ Tools</button>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <section id="sec-home" class="show">
+      <div class="sec-head"><h2>⭐ Daily Drivers</h2><span>your most-opened doors</span></div>
+      <p class="sec-note">The five you reach for every day. Everything else lives in the tabs above.</p>
+
+      <div class="card" data-name="glam hustle hub store shop">
+        <div class="ic">🛍️</div>
+        <div class="txt"><div class="nm">Glam Hustle Hub Store</div><div class="ds">Your storefront — every product, one shop.</div></div>
+        <a class="open" href="https://glamhustlehub.com" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="pinterest farm">
+        <div class="ic">📌</div>
+        <div class="txt"><div class="nm">Pinterest Farm</div><div class="ds">Your Pinterest agent farm — pins, boards &amp; queues.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/pinterest-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="tiktok shop farm videos">
+        <div class="ic">🎵</div>
+        <div class="txt"><div class="nm">TikTok Shop Farm</div><div class="ds">Your TikTok Shop video farm — products to posts.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/tiktok-shop-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="facebook farm">
+        <div class="ic">📘</div>
+        <div class="txt"><div class="nm">Facebook Farm</div><div class="ds">Your Facebook content farm — posts planned &amp; queued.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/facebook-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glam vault skool community">
+        <div class="ic">🔐</div>
+        <div class="txt"><div class="nm">The Glam Vault (Skool)</div><div class="ds">Your private Skool community — home base for members.</div></div>
+        <a class="open" href="https://www.skool.com/the-glam-vault-9512" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <!-- FARMS -->
+    <section id="sec-farms">
+      <div class="sec-head"><h2>🌾 Farms</h2><span>5 farms</span></div>
+      <p class="sec-note">Your agent farms — each one plans and queues content for its platform.</p>
+
+      <div class="card" data-name="pinterest farm">
+        <div class="ic">📌</div>
+        <div class="txt"><div class="nm">Pinterest Farm</div><div class="ds">Your Pinterest agent farm — pins, boards &amp; queues.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/pinterest-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="facebook farm">
+        <div class="ic">📘</div>
+        <div class="txt"><div class="nm">Facebook Farm</div><div class="ds">Your Facebook content farm — posts planned &amp; queued.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/facebook-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="tiktok shop farm videos">
+        <div class="ic">🎵</div>
+        <div class="txt"><div class="nm">TikTok Shop Farm</div><div class="ds">Your TikTok Shop video farm — products to posts.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/tiktok-shop-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="3d tiktok shop farm futuristic">
+        <div class="ic">🌀</div>
+        <div class="txt"><div class="nm">3D TikTok Shop Farm</div><div class="ds">The futuristic 3D edition of your TikTok Shop farm.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/futuristic-3d-tiktok-shop-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="skool farm">
+        <div class="ic">🎓</div>
+        <div class="txt"><div class="nm">Skool Farm</div><div class="ds">Your Skool content farm — community posts on deck.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/skool-farm/" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <!-- BUSINESS -->
+    <section id="sec-business">
+      <div class="sec-head"><h2>💼 Business</h2><span>store, offers &amp; money</span></div>
+      <p class="sec-note">Where the money moves — storefront, workshop, offers, and payouts.</p>
+
+      <div class="card" data-name="glam hustle hub store shop">
+        <div class="ic">🛍️</div>
+        <div class="txt"><div class="nm">Glam Hustle Hub Store</div><div class="ds">Your storefront — every product, one shop.</div></div>
+        <a class="open" href="https://glamhustlehub.com" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="build your brand world workshop">
+        <div class="ic">🌎</div>
+        <div class="txt"><div class="nm">Build Your Brand World Workshop</div><div class="ds">Your signature workshop — the sales page.</div></div>
+        <a class="open" href="https://www.glamhustlehub.com/workshops.html" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glam vault membership product">
+        <div class="ic">💎</div>
+        <div class="txt"><div class="nm">The Glam Vault</div><div class="ds">Your flagship Vault offer on the store.</div></div>
+        <a class="open" href="https://glamhustlehub.com/products/the-glam-vault" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="all-purpose prompt studio prompts">
+        <div class="ic">✍️</div>
+        <div class="txt"><div class="nm">All-Purpose Prompt Studio</div><div class="ds">Your prompt studio product on the store.</div></div>
+        <a class="open" href="https://glamhustlehub.com/products/all-purpose-prompt-studio" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="house of glam printify shop merch">
+        <div class="ic">👕</div>
+        <div class="txt"><div class="nm">House of Glam (Printify)</div><div class="ds">Your print-on-demand merch shop.</div></div>
+        <a class="open" href="https://house-of-glam.printify.me" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="stripe dashboard payments money">
+        <div class="ic">💳</div>
+        <div class="txt"><div class="nm">Stripe Dashboard</div><div class="ds">Payments, payouts &amp; customers — the money view.</div></div>
+        <a class="open" href="https://dashboard.stripe.com" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <!-- COMMUNITIES -->
+    <section id="sec-communities">
+      <div class="sec-head"><h2>👑 Communities</h2><span>your people</span></div>
+      <p class="sec-note">The rooms your people gather in — members, group, circle, and channel.</p>
+
+      <div class="card" data-name="glam vault skool community">
+        <div class="ic">🔐</div>
+        <div class="txt"><div class="nm">The Glam Vault (Skool)</div><div class="ds">Your private Skool community — home base for members.</div></div>
+        <a class="open" href="https://www.skool.com/the-glam-vault-9512" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glow up society facebook group community">
+        <div class="ic">🌟</div>
+        <div class="txt"><div class="nm">The Glow Up Society</div><div class="ds">Your Facebook group — the glow-up community.</div></div>
+        <a class="open" href="https://www.facebook.com/groups/1635959347719763" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glam inner circle member app loyalty">
+        <div class="ic">⭕</div>
+        <div class="txt"><div class="nm">Glam's Inner Circle</div><div class="ds">The member app for your Inner Circle.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/prompt-like-glam-workshop/inner-circle/app/" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glam hustle hub telegram channel">
+        <div class="ic">✈️</div>
+        <div class="txt"><div class="nm">Glam Hustle Hub Telegram</div><div class="ds">Your Telegram channel — updates straight to followers.</div></div>
+        <a class="open" href="https://t.me/GlamHustleHub" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <!-- SOCIALS -->
+    <section id="sec-socials">
+      <div class="sec-head"><h2>📱 Socials</h2><span>your public faces</span></div>
+      <p class="sec-note">Every profile you post from — tap to jump straight there.</p>
+
+      <div class="card" data-name="instagram promptlikeglam">
+        <div class="ic">📸</div>
+        <div class="txt"><div class="nm">Instagram</div><div class="ds">@promptlikeglam — reels, posts &amp; stories.</div></div>
+        <a class="open" href="https://www.instagram.com/promptlikeglam" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="threads promptlikeglam">
+        <div class="ic">🧵</div>
+        <div class="txt"><div class="nm">Threads</div><div class="ds">@promptlikeglam — daily posts &amp; conversation.</div></div>
+        <a class="open" href="https://www.threads.com/@promptlikeglam" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="tiktok promptlikeglam">
+        <div class="ic">🎵</div>
+        <div class="txt"><div class="nm">TikTok</div><div class="ds">@promptlikeglam — your main TikTok stage.</div></div>
+        <a class="open" href="https://www.tiktok.com/@promptlikeglam" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="tiktok shop glamorousgrammyglowup">
+        <div class="ic">🛒</div>
+        <div class="txt"><div class="nm">TikTok Shop</div><div class="ds">@glamorousgrammyglowup — your shop account.</div></div>
+        <a class="open" href="https://www.tiktok.com/@glamorousgrammyglowup" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="pinterest promptlikeglam">
+        <div class="ic">📌</div>
+        <div class="txt"><div class="nm">Pinterest</div><div class="ds">@PromptLikeGlam — pins that sell while you sleep.</div></div>
+        <a class="open" href="https://www.pinterest.com/PromptLikeGlam" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="youtube glam hustle hub videos">
+        <div class="ic">▶️</div>
+        <div class="txt"><div class="nm">YouTube — Glam Hustle Hub</div><div class="ds">Your channel — shows, lessons &amp; replays.</div></div>
+        <a class="open" href="https://www.youtube.com/channel/UC7A_r3hKSvzZT9r63UAV4pQ" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="sec-tools">
+      <div class="sec-head"><h2>🛠️ Tools</h2><span>your builders</span></div>
+      <p class="sec-note">The studios and finders you build with.</p>
+
+      <div class="card" data-name="pia pin studio pinterest tool">
+        <div class="ic">📌</div>
+        <div class="txt"><div class="nm">Pia Pin Studio</div><div class="ds">Your Pinterest pin-making studio.</div></div>
+        <a class="open" href="https://piapinstudio.com" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="glam form studio forms">
+        <div class="ic">📝</div>
+        <div class="txt"><div class="nm">Glam Form Studio</div><div class="ds">Your form builder — sign-ups &amp; intake, glam-style.</div></div>
+        <a class="open" href="https://glamformstudio.com" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="card" data-name="bing business finds research ideas">
+        <div class="ic">🔎</div>
+        <div class="txt"><div class="nm">Bing Business Finds</div><div class="ds">Useful business finds from your Bing research runs.</div></div>
+        <a class="open" href="https://nakeymasi-coder.github.io/bing-business-finds/" target="_blank" rel="noopener">Open</a>
+      </div>
+    </section>
+
+    <div id="noResults">No matches in this section.<br>Try a shorter word — or clear the search to see everything.</div>
+  </main>
+
+  <footer class="site">
+    <div class="foot-btns">
+      <a class="vault" href="https://glamhustlehub.com/products/the-glam-vault" target="_blank" rel="noopener">✨ Join The Glam Vault</a>
+      <a class="shop" href="https://glamhustlehub.com" target="_blank" rel="noopener">🛍️ Shop Glam Hustle Hub</a>
+    </div>
+    <div class="made">Glam Command Center 🦋 Glam Hustle Hub</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var gate = document.getElementById('gate');
+  var app = document.getElementById('app');
+  var pills = Array.prototype.slice.call(document.querySelectorAll('#pillNav button'));
+  var sections = {};
+  pills.forEach(function(b){ sections[b.getAttribute('data-sec')] = document.getElementById('sec-' + b.getAttribute('data-sec')); });
+  var searchInput = document.getElementById('search');
+  var noResults = document.getElementById('noResults');
+  var current = 'home';
+
+  function enter(sec){
+    gate.classList.add('gone');
+    app.classList.add('on');
+    document.body.style.overflow = '';
+    if(sec){ show(sec); }
+    window.scrollTo(0,0);
+  }
+  function show(sec){
+    current = sec;
+    pills.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-sec') === sec); });
+    Object.keys(sections).forEach(function(k){ sections[k].classList.toggle('show', k === sec); });
+    applyFilter();
+    var active = document.querySelector('#pillNav button.active');
+    if(active && active.scrollIntoView){ active.scrollIntoView({block:'nearest', inline:'center'}); }
+  }
+  function applyFilter(){
+    var q = (searchInput.value || '').trim().toLowerCase();
+    var sec = sections[current];
+    if(!sec || !noResults){ return; }
+    var visible = 0;
+    Array.prototype.forEach.call(sec.querySelectorAll('.card'), function(card){
+      var hay = (card.getAttribute('data-name') || '') + ' ' + card.textContent.toLowerCase();
+      var match = !q || hay.indexOf(q) !== -1;
+      card.classList.toggle('hide', !match);
+      if(match){ visible++; }
+    });
+    noResults.style.display = (q && visible === 0) ? 'block' : 'none';
+  }
+
+  document.getElementById('enterBtn').addEventListener('click', function(){ enter('home'); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-jump]'), function(btn){
+    btn.addEventListener('click', function(){ enter(btn.getAttribute('data-jump')); });
+  });
+  pills.forEach(function(b){
+    b.addEventListener('click', function(){ show(b.getAttribute('data-sec')); window.scrollTo(0,0); });
+  });
+  searchInput.addEventListener('input', applyFilter);
+  document.body.style.overflow = 'hidden';
+})();
+</script>
+</body>
+</html>
